@@ -33,6 +33,7 @@ def clean_attributs(data):
 	data["chgt_dir"] = data["chgt_dir"].astype(str)
 	data["dept"] = data["dept"].astype(str)
 	data = data.drop(columns="dept")
+	data = data.drop(columns="code_cr")
 	return data
 
 
