@@ -264,15 +264,14 @@ def confusion_matrix(lst_classif,lst_classif_names,X,y):
 #     # for item in data_cluster:
 
 
-# print(k_means.cluster_centers_)
-# y_kmeans = k_means.predict(X_num_norm)
-# plt.scatter(X[:, 0], X[:, 1], c=y_kmeans, s=50, cmap='viridis')
-# print(X_num_norm['effectif'])
-# plt.scatter(X_num_norm['ca_export_FK'], X_num_norm['endettement'], c=y_kmeans, s=2);
-# plt.show()
+print(k_means.cluster_centers_)
+y_kmeans = k_means.predict(X_num_norm)
+plt.scatter(X[:, 0], X[:, 1], c=y_kmeans, s=50, cmap='viridis')
+print(X_num_norm['effectif'])
+plt.scatter(X_num_norm['ca_export_FK'], X_num_norm['endettement'], c=y_kmeans, s=2);
+plt.show()
 
-# hiérarchique ascendante
-# linkage_matrix = linkage(X_all_norm, 'ward')
+#hiérarchique ascendante
 # fig = plt.figure()
 # dendrogram(linkage_matrix,color_threshold=0)
 # plt.title ('Hierarchical Clustering Dendrogram (Ward)')
