@@ -132,23 +132,29 @@ def correlation_circle(df,nb_var,x_axis,y_axis,corvar):
     plt.close(fig)
 
 def clean_attributs(data):
-	# list all wrong attributs
-	wrong_risque=data.index[data['risque'] == '1-6'].tolist()
-	wrong_ca=data.index[data['ca_total_FL'] <= 0].tolist()
-	
-	lst_wrongs= wrong_risque+wrong_ca
+    
+    rdv_oui = data[data['rdv']==1]
+    rdv_non = data[data['rdv']==0]
+    random_non_rdv = rdv_non.sample(n=rdv_oui.shape[0], random_state=1)
 
-	# delete row by index
-	data = data.drop(data.index[lst_wrongs])
-	data["chgt_dir"] = data["chgt_dir"].astype(str)
-	
-	data["rdv"] = data["rdv"].astype(str)
-	data.loc[data['rdv'] == "1" ,'rdv'] = "oui"
-	data.loc[data['rdv'] == "0" ,'rdv'] = "non"
+    data=rdv_oui.append(random_non_rdv,ignore_index=True)
 
-	data["dept"] = data["dept"].astype(str)
+    # list all wrong attributs
+    wrong_risque=data.index[data['risque'] == '1-6'].tolist()
+    wrong_ca=data.index[data['ca_total_FL'] <= 0].tolist()
+    lst_wrongs= wrong_risque+wrong_ca
 
-	return data
+    # delete row by index
+    data = data.drop(data.index[lst_wrongs])
+    data["chgt_dir"] = data["chgt_dir"].astype(str)
+
+    data["rdv"] = data["rdv"].astype(str)
+    data.loc[data['rdv'] == "1" ,'rdv'] = "oui"
+    data.loc[data['rdv'] == "0" ,'rdv'] = "non"
+
+    data["dept"] = data["dept"].astype(str)
+
+    return data
 
 
 def preprocess_attributs_cat(data):
@@ -217,21 +223,20 @@ X_num_norm=preprocess_attributs_num(data_num)
 
 X_all_norm=pd.concat([X_cat_norm, X_num_norm],axis=1)
 
-
-k_means=KMeans(n_clusters=4)
+k_means=KMeans(n_clusters=5)
 k_means.fit(np.array(X_all_norm))
 
-my_dict = {i:np.where(k_means.labels_== i)[0] for i in range(k_means.n_clusters)}
+# my_dict = {i:np.where(k_means.labels_== i)[0] for i in range(k_means.n_clusters)}
 
-dictList = []
-for key,value in my_dict.iteritems():
-    tmp=[key,value]
-    dictList.append(tmp)
+# dictList = []
+# for key,value in my_dict.iteritems():
+#     tmp=[key,value]
+#     dictList.append(tmp)
 
-for num_cluster in range(0,4):
-    data_cluster = X_all_norm[k_means.labels_ == num_cluster]
-    print(data_cluster)
-    # for item in data_cluster:
+# for num_cluster in range(0,5):
+#     data_cluster = X_all_norm[k_means.labels_ == num_cluster]
+#     print(data_cluster)
+#     # for item in data_cluster:
 
 
 
@@ -243,7 +248,7 @@ for num_cluster in range(0,4):
 # plt.scatter(X_num_norm['ca_export_FK'], X_num_norm['endettement'], c=y_kmeans, s=2);
 # plt.show()
 
-#hiérarchique ascendante
+# hiérarchique ascendante
 # linkage_matrix = linkage(X_all_norm, 'ward')
 # fig = plt.figure()
 # dendrogram(linkage_matrix,color_threshold=0)
@@ -274,21 +279,21 @@ for num_cluster in range(0,4):
 # 	plt.clf()
 
 
-# acp = PCA(svd_solver='full')
-# coord = acp.fit_transform(X_num_norm)
-# print(pd.DataFrame(acp.components_))
-# print(pd.DataFrame(coord,columns=X_num_norm.columns))
+acp = PCA(svd_solver='full')
+coord = acp.fit_transform(X_all_norm)
+print(pd.DataFrame(acp.components_))
+print(pd.DataFrame(coord,columns=X_all_norm.columns))
 # plot eigen values
-# n = np.size(X_num_norm, 0)
-# p = np.size(X_num_norm, 1)
-# eigval = float(n-1)/n*acp.explained_variance_
-# fig =plt.figure() 
-# plt.plot(np.arange(1,p+1),eigval)
-# plt.title("Scree plot")
-# plt.ylabel("Eigen values")
-# plt.xlabel("Factor number")
-# plt.savefig('acp_eigen_values') 
-# plt.close(fig)
+n = np.size(X_all_norm, 0)
+p = np.size(X_all_norm, 1)
+eigval = float(n-1)/n*acp.explained_variance_
+fig =plt.figure() 
+plt.plot(np.arange(1,p+1),eigval)
+plt.title("Scree plot")
+plt.ylabel("Eigen values")
+plt.xlabel("Factor number")
+plt.savefig('acp_eigen_values') 
+plt.close(fig)
 
 
 # sqrt_eigval = np.sqrt(eigval) 
