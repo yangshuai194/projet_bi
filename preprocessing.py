@@ -76,3 +76,10 @@ class Preprocessing:
 
 		X_num_norm=pd.concat([X_num_norm, X_ca_export_norm,X_evo_risque_norm],axis=1)
 		return X_num_norm
+
+	def preprocess_attributs(self):
+		self.data = clean_attributs()
+		X_num_norm = preprocess_attributs_num()
+		X_cat_norm = preprocess_attributs_cat()
+		self.data = pd.concat([X_cat_norm, X_num_norm],axis=1)
+		return self.data
