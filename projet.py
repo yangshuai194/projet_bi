@@ -21,7 +21,8 @@ from scipy.cluster.hierarchy import dendrogram, linkage
 from sklearn.decomposition import PCA
 from sklearn. cluster import KMeans
 from sklearn.metrics import accuracy_score
-
+from sklearn.feature_selection import RFECV 
+from sklearn.svm import SVR
 
 warnings.filterwarnings(action='ignore', category=DataConversionWarning)
 pd.options.mode.chained_assignment = None
@@ -148,9 +149,9 @@ def clean_attributs(data):
     data = data.drop(data.index[lst_wrongs])
     data["chgt_dir"] = data["chgt_dir"].astype(str)
 
-    data["rdv"] = data["rdv"].astype(str)
-    data.loc[data['rdv'] == "1" ,'rdv'] = "oui"
-    data.loc[data['rdv'] == "0" ,'rdv'] = "non"
+    # data["rdv"] = data["rdv"].astype(str)
+    # data.loc[data['rdv'] == "1" ,'rdv'] = "oui"
+    # data.loc[data['rdv'] == "0" ,'rdv'] = "non"
 
     data["dept"] = data["dept"].astype(str)
 
@@ -199,9 +200,7 @@ def preprocess_attributs_num(data):
 	return X_num_norm
 
 # read input text and put data inside a data frame
-data = pd.read_csv('base_prospect.csv',sep=',',encoding = 'utf8')
-# print(data.index[data['endettement'] <0].shape[0])
-# print(data['endettement'].quantile([0.25,0.1]))
+data = pd.read_csv('base_prospect.csv',sep=',')
 
 # nettoyage, recodage des données anormales
 data=clean_attributs(data)
@@ -214,16 +213,17 @@ data = data.drop(columns="dept")
 data = data.drop(columns="code_cr")
 
 # Replace missing values by mean and scale numeric values
-data_num = data.select_dtypes(include=['float64','int64'])
+data_num = data.select_dtypes(include=['float64','int64']).drop('rdv',axis=1)
 # Replace missing values by mean and discretize categorical values
-data_cat = data.select_dtypes(exclude=['float64','int64']).drop('rdv',axis=1)
+data_cat = data.select_dtypes(exclude=['float64','int64'])
 
 X_cat_norm=preprocess_attributs_cat(data_cat)
+
 X_num_norm=preprocess_attributs_num(data_num)
 
+# X_num_norm.sort_values(by=['effectif'],ascending=False)
+
 X_all_norm=pd.concat([X_cat_norm, X_num_norm],axis=1)
-
-
 
 dummycl = DummyClassifier(strategy="most_frequent")
 gmb = GaussianNB()
@@ -231,8 +231,8 @@ dectree = tree.DecisionTreeClassifier()
 logreg = LogisticRegression(solver="liblinear")
 svc = svm.SVC(gamma='scale')
 
-lst_classif = [dummycl, gmb, dectree, logreg, svc]
-lst_classif_names = ['Dummy', 'Naive Bayes', 'Decision tree', 'Logistic regression', 'SVM']
+lst_classif = [dummycl, gmb, dectree, logreg]
+lst_classif_names = ['Dummy', 'Naive Bayes', 'Decision tree', 'Logistic regression']
 
 def accuracy_score(lst_classif,lst_classif_names,X,y):
     for clf,name_clf in zip(lst_classif,lst_classif_names):
@@ -245,7 +245,10 @@ def confusion_matrix(lst_classif,lst_classif_names,X,y):
         print("Accuracy of "+name_clf+" classifier on cross-validation: %0.2f" % metrics.accuracy_score(y, predicted))
         print(metrics.confusion_matrix(y, predicted))
 
-# accuracy_score(lst_classif,lst_classif_names,X_all_norm,y)
+
+
+# accuracy_score(lst_classif,lst_classif_names,X_cat_norm,y)
+# confusion_matrix(lst_classif,lst_classif_names,X_all_norm,y)
 
 
 # k_means=KMeans(n_clusters=4)
@@ -264,12 +267,12 @@ def confusion_matrix(lst_classif,lst_classif_names,X,y):
 #     # for item in data_cluster:
 
 
-print(k_means.cluster_centers_)
-y_kmeans = k_means.predict(X_num_norm)
-plt.scatter(X[:, 0], X[:, 1], c=y_kmeans, s=50, cmap='viridis')
-print(X_num_norm['effectif'])
-plt.scatter(X_num_norm['ca_export_FK'], X_num_norm['endettement'], c=y_kmeans, s=2);
-plt.show()
+# print(k_means.cluster_centers_)
+# y_kmeans = k_means.predict(X_num_norm)
+# plt.scatter(X[:, 0], X[:, 1], c=y_kmeans, s=50, cmap='viridis')
+# print(X_num_norm['effectif'])
+# plt.scatter(X_num_norm['ca_export_FK'], X_num_norm['endettement'], c=y_kmeans, s=2);
+# plt.show()
 
 #hiérarchique ascendante
 # fig = plt.figure()
@@ -297,15 +300,20 @@ plt.show()
 #     plt.savefig ('k-means_elbow_%s'%x)
 #     plt.clf()
 
+# estimator = SVR(kernel="linear")
+# selector = RFECV(estimator=estimator, cv=5) 
+# selector.fit(X_all_norm, y)
+# print("Optimal number of features: %d" % selector.n_features_) 
+# print(selector.ranking_)
+
 
 # acp = PCA(svd_solver='full')
-# coord = acp.fit_transform(X_all_norm)
-# print(pd.DataFrame(acp.components_))
-# print(pd.DataFrame(coord,columns=X_all_norm.columns))
+# coord = acp.fit_transform(X_num_norm)
 # # plot eigen values
-# n = np.size(X_all_norm, 0)
-# p = np.size(X_all_norm, 1)
+# n = np.size(X_num_norm, 0)
+# p = np.size(X_num_norm, 1)
 # eigval = float(n-1)/n*acp.explained_variance_
+# print(pd.DataFrame(acp.components_))
 # fig =plt.figure() 
 # plt.plot(np.arange(1,p+1),eigval)
 # plt.title("Scree plot")
@@ -319,8 +327,9 @@ plt.show()
 # corvar = np.zeros((p,p))
 # for k in range(p):
 # 	corvar [:, k] = acp.components_[k,:]*sqrt_eigval[k]
-# # lines: variables # columns: factors
-# # plot instances on the first plan( first 2 factors )
+
+# lines: variables # columns: factors
+# plot instances on the first plan( first 2 factors )
 # fig , axes = plt.subplots(figsize =(12,12))
 # axes.set_xlim(-1,1) 
 # axes.set_ylim(-1,1) 
@@ -331,8 +340,10 @@ plt.show()
 # plt.savefig('acp_instances_1st_plan')
 # plt.close(fig)
 
+# correlation_circle(data_num,len(data_num.columns),0,1,corvar)
+# correlation_circle(data_num,len(data_num.columns),1,2,corvar)
+# correlation_circle(data_num,len(data_num.columns),2,3,corvar)
 
-# correlation_circle(data_num,len(data_num.head()),0,1,corvar)
 # fig , axes = plt.subplots(figsize =(12,12))
 # axes.set_xlim(-6,6) 
 # axes.set_ylim(-6,6) 
