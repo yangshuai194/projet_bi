@@ -108,4 +108,5 @@ class Preprocessing:
 		X_num_norm = self.preprocess_attributs_num()
 		X_cat_norm = self.preprocess_attributs_cat()
 		self.data = pd.concat([X_cat_norm, X_num_norm],axis=1)
+		
 		return self.data
