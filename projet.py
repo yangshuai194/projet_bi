@@ -154,7 +154,7 @@ def clean_attributs(data):
     # data.loc[data['rdv'] == "0" ,'rdv'] = "non"
 
     data["dept"] = data["dept"].astype(str)
-
+    
     return data
 
 
