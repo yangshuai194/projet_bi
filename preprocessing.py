@@ -33,6 +33,16 @@ class Preprocessing:
    		self.rdv_non = rdv_non.sample(n=rdv_oui.shape[0], random_state=1)
    		self.data = rdv_oui.append(self.rdv_non,ignore_index=True)
 
+   	def balance_data_rate(self,rate):
+		rdv_oui = self.data[self.data['rdv']==1]
+   		rdv_non = self.data[self.data['rdv']==0]
+   		rate_oui = int(rdv_oui.shape[0] * rate)
+		rate_non = int(rdv_non.shape[0] * rate)
+   		self.rdv_oui = rdv_non.sample(n=rate_oui, random_state=1)
+   		self.rdv_non = rdv_non.sample(n=rate_non, random_state=1)
+   		self.data = self.rdv_oui.append(self.rdv_non,ignore_index=True)
+
+
 	def clean_attributs(self):
 		# list all wrong attributs
 		wrong_risque=self.data.index[self.data['risque'] == '1-6'].tolist()
@@ -108,5 +118,12 @@ class Preprocessing:
 		X_num_norm = self.preprocess_attributs_num()
 		X_cat_norm = self.preprocess_attributs_cat()
 		self.data = pd.concat([X_cat_norm, X_num_norm],axis=1)
-		
+		return self.data
+
+	def preprocess_attributs_clustering(self,rate):
+		self.balance_data_rate(rate)
+		self.clean_attributs()
+		X_num_norm = self.preprocess_attributs_num()
+		X_cat_norm = self.preprocess_attributs_cat()
+		self.data = pd.concat([X_cat_norm, X_num_norm],axis=1)
 		return self.data
