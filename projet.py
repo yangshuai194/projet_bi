@@ -153,7 +153,7 @@ def clean_attributs(data):
     data.loc[data['rdv'] == "0" ,'rdv'] = "non"
 
     data["dept"] = data["dept"].astype(str)
-
+    
     return data
 
 
@@ -240,12 +240,12 @@ k_means.fit(np.array(X_all_norm))
 
 
 
-print(k_means.cluster_centers_)
-y_kmeans = k_means.predict(X_num_norm)
-plt.scatter(X[:, 0], X[:, 1], c=y_kmeans, s=50, cmap='viridis')
-print(X_num_norm['effectif'])
-plt.scatter(X_num_norm['ca_export_FK'], X_num_norm['endettement'], c=y_kmeans, s=2);
-plt.show()
+# print(k_means.cluster_centers_)
+# y_kmeans = k_means.predict(X_num_norm)
+# plt.scatter(X[:, 0], X[:, 1], c=y_kmeans, s=50, cmap='viridis')
+# print(X_num_norm['effectif'])
+# plt.scatter(X_num_norm['ca_export_FK'], X_num_norm['endettement'], c=y_kmeans, s=2);
+# plt.show()
 
 #hiérarchique ascendante
 #linkage_matrix = linkage(X_all_norm, 'ward')
