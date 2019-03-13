@@ -199,7 +199,7 @@ def preprocess_attributs_num(data):
 	return X_num_norm
 
 # read input text and put data inside a data frame
-data = pd.read_csv('base_prospect.csv',sep=',')
+data = pd.read_csv('base_prospect.csv',sep=',',encoding = 'utf8')
 # print(data.index[data['endettement'] <0].shape[0])
 # print(data['endettement'].quantile([0.25,0.1]))
 
@@ -223,8 +223,33 @@ X_num_norm=preprocess_attributs_num(data_num)
 
 X_all_norm=pd.concat([X_cat_norm, X_num_norm],axis=1)
 
-k_means=KMeans(n_clusters=5)
-k_means.fit(np.array(X_all_norm))
+
+
+dummycl = DummyClassifier(strategy="most_frequent")
+gmb = GaussianNB()
+dectree = tree.DecisionTreeClassifier()
+logreg = LogisticRegression(solver="liblinear")
+svc = svm.SVC(gamma='scale')
+
+lst_classif = [dummycl, gmb, dectree, logreg, svc]
+lst_classif_names = ['Dummy', 'Naive Bayes', 'Decision tree', 'Logistic regression', 'SVM']
+
+def accuracy_score(lst_classif,lst_classif_names,X,y):
+    for clf,name_clf in zip(lst_classif,lst_classif_names):
+        scores = cross_val_score(clf, X, y, cv=5)
+        print("Accuracy of "+name_clf+" classifier on cross-validation: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+def confusion_matrix(lst_classif,lst_classif_names,X,y):
+    for clf,name_clf in zip(lst_classif,lst_classif_names):
+        predicted = cross_val_predict(clf, X, y, cv=5) 
+        print("Accuracy of "+name_clf+" classifier on cross-validation: %0.2f" % metrics.accuracy_score(y, predicted))
+        print(metrics.confusion_matrix(y, predicted))
+
+# accuracy_score(lst_classif,lst_classif_names,X_all_norm,y)
+
+
+# k_means=KMeans(n_clusters=4)
+# k_means.fit(np.array(X_all_norm))
 
 # my_dict = {i:np.where(k_means.labels_== i)[0] for i in range(k_means.n_clusters)}
 
@@ -233,7 +258,7 @@ k_means.fit(np.array(X_all_norm))
 #     tmp=[key,value]
 #     dictList.append(tmp)
 
-# for num_cluster in range(0,5):
+# for num_cluster in range(0,4):
 #     data_cluster = X_all_norm[k_means.labels_ == num_cluster]
 #     print(data_cluster)
 #     # for item in data_cluster:
@@ -248,8 +273,6 @@ k_means.fit(np.array(X_all_norm))
 # plt.show()
 
 #hiérarchique ascendante
-#linkage_matrix = linkage(X_all_norm, 'ward')
-
 # fig = plt.figure()
 # dendrogram(linkage_matrix,color_threshold=0)
 # plt.title ('Hierarchical Clustering Dendrogram (Ward)')
@@ -260,40 +283,37 @@ k_means.fit(np.array(X_all_norm))
 # plt.close(fig)
 # plt.clf()
 
+# for x in range(0,5):
+#     lst_k=range(1,15)
+#     Sum_of_squared_distances = []
+#     for k in lst_k:
+#     	est=KMeans(n_clusters=k)
+#     	est.fit(X_all_norm)
+#     	Sum_of_squared_distances.append(r_square(np.array(X_all_norm), est.cluster_centers_,est.labels_,k))
 
-# for x in range(1,4):
-# 	lst_k=range(2,11)
-# 	lst_rsq = []
-# 	for k in lst_k:
-# 		est=KMeans(n_clusters=k)
-# 		est.fit(np.array(X_num_norm))
-# 		lst_rsq.append(r_square(np.array(X_num_norm), est.cluster_centers_,est.labels_,k))
-
-# 	fig = plt.figure ()
-# 	plt.plot(lst_k, lst_rsq, 'bx-')
-# 	plt.xlabel('k')
-# 	plt.ylabel('RSQ')
-# 	plt.title ('The Elbow Method showing the optimal k')
-# 	plt.savefig ('k-means_elbow_method_%s' %(x))
-# 	plt.close(fig)
-# 	plt.clf()
+#     plt.plot(lst_k, Sum_of_squared_distances, 'bx-')
+#     plt.xlabel('k')
+#     plt.ylabel('Sum_of_squared_distances')
+#     plt.title('Elbow Method For Optimal k')
+#     plt.savefig ('k-means_elbow_%s'%x)
+#     plt.clf()
 
 
-acp = PCA(svd_solver='full')
-coord = acp.fit_transform(X_all_norm)
-print(pd.DataFrame(acp.components_))
-print(pd.DataFrame(coord,columns=X_all_norm.columns))
-# plot eigen values
-n = np.size(X_all_norm, 0)
-p = np.size(X_all_norm, 1)
-eigval = float(n-1)/n*acp.explained_variance_
-fig =plt.figure() 
-plt.plot(np.arange(1,p+1),eigval)
-plt.title("Scree plot")
-plt.ylabel("Eigen values")
-plt.xlabel("Factor number")
-plt.savefig('acp_eigen_values') 
-plt.close(fig)
+# acp = PCA(svd_solver='full')
+# coord = acp.fit_transform(X_all_norm)
+# print(pd.DataFrame(acp.components_))
+# print(pd.DataFrame(coord,columns=X_all_norm.columns))
+# # plot eigen values
+# n = np.size(X_all_norm, 0)
+# p = np.size(X_all_norm, 1)
+# eigval = float(n-1)/n*acp.explained_variance_
+# fig =plt.figure() 
+# plt.plot(np.arange(1,p+1),eigval)
+# plt.title("Scree plot")
+# plt.ylabel("Eigen values")
+# plt.xlabel("Factor number")
+# plt.savefig('acp_eigen_values') 
+# plt.close(fig)
 
 
 # sqrt_eigval = np.sqrt(eigval) 
