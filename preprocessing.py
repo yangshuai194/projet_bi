@@ -42,6 +42,9 @@ class Preprocessing:
    		self.rdv_non = rdv_non.sample(n=rate_non, random_state=1)
    		self.data = self.rdv_oui.append(self.rdv_non,ignore_index=True)
 
+   	def balance_data_rate_all(self,rate):
+   		rate_int = int(self.data['rdv'].shape[0] * rate)
+   		self.data = self.data.sample(n=rate_int, random_state=1).reset_index()
 
 	def clean_attributs(self):
 		# list all wrong attributs
@@ -85,8 +88,8 @@ class Preprocessing:
 		# convert categorical values into one-hot vectors
 		# and replace NA value to most_frequent
 		one_hot_vectors=pd.get_dummies(data_cat)
-		X_cat_norm=pd.DataFrame(imp_frequent.fit_transform(one_hot_vectors),columns=one_hot_vectors.columns)
-		return X_cat_norm
+		self.X_cat_norm=pd.DataFrame(imp_frequent.fit_transform(one_hot_vectors),columns=one_hot_vectors.columns)
+		return self.X_cat_norm
 
 	def preprocess_attributs_num(self):
 		# Replace missing values by mean and scale numeric values
@@ -109,10 +112,17 @@ class Preprocessing:
 		xScal = var.fit_transform(data_num)
 		X_num_norm = pd.DataFrame(xScal,columns=data_num.columns)
 
-		X_num_norm=pd.concat([X_num_norm, X_ca_export_norm,X_evo_risque_norm],axis=1)
-		return X_num_norm
+		self.X_num_norm=pd.concat([X_num_norm, X_ca_export_norm,X_evo_risque_norm],axis=1)
+		return self.X_num_norm
 
 	def preprocess_attributs(self):
+		self.clean_attributs()
+		self.X_num_norm = self.preprocess_attributs_num()
+		self.X_cat_norm = self.preprocess_attributs_cat()
+		self.data = pd.concat([X_cat_norm, X_num_norm],axis=1)
+		return self.data
+
+	def preprocess_attributs_balance(self):
 		self.balance_data()
 		self.clean_attributs()
 		X_num_norm = self.preprocess_attributs_num()
@@ -121,7 +131,7 @@ class Preprocessing:
 		return self.data
 
 	def preprocess_attributs_clustering(self,rate):
-		self.balance_data_rate(rate)
+		self.balance_data_rate_all(rate)
 		self.clean_attributs()
 		X_num_norm = self.preprocess_attributs_num()
 		X_cat_norm = self.preprocess_attributs_cat()

@@ -10,6 +10,11 @@ from sklearn.cluster import AgglomerativeClustering
 from sklearn.cluster import Birch
 import sys
 import matplotlib.pyplot as plt
+from sklearn.exceptions import DataConversionWarning
+import warnings
+
+warnings.filterwarnings(action='ignore', category=DataConversionWarning)
+pd.options.mode.chained_assignment = None
 
 # compute within variance
 def within_variance(data,centroids,labels,q):
@@ -67,7 +72,7 @@ if __name__ == "__main__":
 	X_all_norm = prep.preprocess_attributs_clustering(0.3)
 
 	print("------- K-Means ---------")
-	for x in range(0,1):
+	for x in range(0,4):
 		lst_k=range(1,15)
 		Sum_of_squared_distances = []
 		for k in lst_k:
