@@ -117,9 +117,9 @@ class Preprocessing:
 
 	def preprocess_attributs(self):
 		self.clean_attributs()
-		self.X_num_norm = self.preprocess_attributs_num()
-		self.X_cat_norm = self.preprocess_attributs_cat()
-		self.data = pd.concat([self.X_cat_norm, self.X_num_norm],axis=1)
+		X_num_norm = self.preprocess_attributs_num()
+		X_cat_norm = self.preprocess_attributs_cat()
+		self.data = pd.concat([X_cat_norm, X_num_norm],axis=1)
 		return self.data
 
 	def preprocess_attributs_balance(self):
