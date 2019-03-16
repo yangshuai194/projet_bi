@@ -11,13 +11,14 @@ from sklearn.linear_model import LogisticRegression
 from sklearn. cluster import KMeans
 import sys
 import numpy as np
+from sklearn.impute import SimpleImputer
 
 def clusterSize(clusterFunction, nbClusters):
 	for num_cluster in range(0,nbClusters):
 		data_cluster = X_all_norm[clusterFunction.labels_ == num_cluster]
 		print(data_cluster.shape[0])
 
-def oneShootCLuster(data,clf,nbCl):
+def oneShootCLusterOld(data,clf,nbCl):
 	print("Adding cluster column to Data...")
 	#Ajout d'une colonne par cluster à data
 	for num_cluster in range(0,nbCl):
@@ -40,7 +41,7 @@ def percent(nbLine,size):
 	return nbLine*100/size
 
 # Ajoute une colonne correspondant au numéro du cluster
-def addClumnCluster(data,clf,nbCl):
+def addClumnClusterOld(data,clf,nbCl):
 	percent = []
 	for ipercent in range(0,100):
 		percent.append(ipercent)
@@ -68,6 +69,19 @@ def addClumnCluster(data,clf,nbCl):
 	print("Done !")
 	return data
 
+def addClumnCluster(data,clf,nbCl):
+	percent = []
+	for ipercent in range(0,100):
+		percent.append(ipercent)
+	old= -1
+	cluster_map = pd.DataFrame()
+	cluster_map['data_index'] = data.index.values
+	cluster_map['cluster'] = k_means.labels_
+	print("add cluster value...")
+	data['cluster'] = pd.Series(cluster_map['cluster'], index=data.index)
+	print("Done !")
+	return data
+
 if __name__ == "__main__":
 	if len(sys.argv) > 1:
 		nbCl=int(sys.argv[1])
@@ -90,7 +104,10 @@ if __name__ == "__main__":
 
 	clusterSize(k_means,nbCl)
 
-	data=addClumnCluster(data,k_means,nbCl)
-
+	X_all_norm=addClumnCluster(X_all_norm,k_means,nbCl)
+	print(X_all_norm)
+	imp_frequent=SimpleImputer(strategy='most_frequent')
+	one_hot_vectors=pd.get_dummies(X_all_norm['cluster'])
+	X_all_norm=pd.DataFrame(imp_frequent.fit_transform(one_hot_vectors),columns=one_hot_vectors.columns)
 	print("--------------- data --------------")
-	print(data)
+	print(X_all_norm)
