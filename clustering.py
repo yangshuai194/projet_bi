@@ -15,10 +15,11 @@ import warnings
 
 warnings.filterwarnings(action='ignore')
 pd.options.mode.chained_assignment = None
-def clusterSize(clusterFunction, nbClusters):
+
+def clusterSize(X_all_norm,clusterFunction, nbClusters):
 	for num_cluster in range(0,nbClusters):
 		data_cluster = X_all_norm[clusterFunction.labels_ == num_cluster]
-		print(data_cluster.shape[0])
+		print('N°'+str(num_cluster)+' cluster contains %s elements.'%data_cluster.shape[0])
 
 def addColumnCluster(data,clf,nbCl):
 	percent = []
@@ -30,11 +31,12 @@ def addColumnCluster(data,clf,nbCl):
 	cluster_map['cluster'] = clf.labels_
 	print("add cluster value...")
 	data['cluster'] = pd.Series(cluster_map['cluster'], index=data.index)
+	print(data['cluster'])
 	print("Done !")
 	return data
 
 
-def generate_files(X_all_norm,prep):
+def generate_files(X_all_norm,prep,clt_name):
 	lst_cluster=X_all_norm['cluster']
 	lst_rdv=prep.y_rdv.reset_index(drop=True)
 	lst_dept=prep.y_dept.reset_index(drop=True)
@@ -50,9 +52,9 @@ def generate_files(X_all_norm,prep):
 	sum_oui=cluster_rdv.groupby('cluster').apply(lambda x: (x=='oui').sum()).reset_index(drop=True).drop(columns='cluster')
 	sum_non=cluster_rdv.groupby('cluster').apply(lambda x: (x=='non').sum()).reset_index(drop=True).drop(columns='cluster')
 
-	writer = pd.ExcelWriter("./generated/dept.xlsx",engine='openpyxl')
-	writer2 = pd.ExcelWriter("./generated/code_cr.xlsx",engine='openpyxl')
-	writer3 = pd.ExcelWriter("./generated/rdv.xlsx",engine='openpyxl')
+	writer = pd.ExcelWriter("./generated/"+clt_name+"_dept.xlsx",engine='openpyxl')
+	writer2 = pd.ExcelWriter("./generated/"+clt_name+"_code_cr.xlsx",engine='openpyxl')
+	writer3 = pd.ExcelWriter("./generated/"+clt_name+"_rdv.xlsx",engine='openpyxl')
 
 	for num_cluster in range(0,8):
 		cluster_dept = cluster_dept_rdv[cluster_dept_rdv['cluster']==num_cluster]
@@ -62,12 +64,13 @@ def generate_files(X_all_norm,prep):
 		name_non = 'cluster_'+str(num_cluster)+'_dept_non'
 		count_dept_1 = dept_oui.groupby(['dept','rdv']).size().to_frame(name_oui).reset_index().drop(columns='rdv')
 		count_dept_1[name_oui] = count_dept_1[name_oui].astype('int')
-		# count1.to_csv(name_oui+".csv", sep=',',index=False)
+		# count_dept_1.to_csv(name_oui+".csv", sep=',',index=False)
 
-		dept_non = cluster_dept_rdv[cluster_dept_rdv['rdv']=='non']
+		dept_non = cluster_dept[cluster_dept['rdv']=='non']
 		count_dept_2 = dept_non.groupby(['dept','rdv']).size().to_frame(name_non).reset_index().drop(columns='rdv')
+		print(count_dept_2)
 		count_dept_2[name_non] = count_dept_2[name_non].astype('int')
-		# count2.to_csv(name_non+'.csv', sep=',',index=False)
+		# count_dept_2.to_csv(name_non+'.csv', sep=',',index=False)
 
 		merged_dept = pd.merge(count_dept_1,count_dept_2, on='dept', how='outer')
 		merged_dept.loc[merged_dept[name_oui].isna(),name_oui] = 0
@@ -86,7 +89,7 @@ def generate_files(X_all_norm,prep):
 		count_code_1 = code_oui.groupby(['code_cr','rdv']).size().to_frame(name_oui).reset_index().drop(columns='rdv')
 		# count_code_1.to_csv(name_oui+".csv", sep=',',index=False)
 
-		code_non = cluster_code_rdv[cluster_code_rdv['rdv']=='non']
+		code_non = cluster_code[cluster_code['rdv']=='non']
 		count_code_2 = code_non.groupby(['code_cr','rdv']).size().to_frame(name_non).reset_index().drop(columns='rdv')
 		# count_code_2.to_csv(name_non+".csv", sep=',',index=False)
 
@@ -109,31 +112,31 @@ def generate_files(X_all_norm,prep):
 	writer2.close()
 	writer3.close()
 
-def type_cluster(X_all_norm,clt_name,rate):
+def type_cluster(X_all_norm,clt_name,nbCl,rate):
 	if clt_name=='KMeans':
 		print("K-Means Starting...")
 		k_means=KMeans(n_clusters=nbCl)
 		k_means.fit(np.array(X_all_norm))
-		clusterSize(k_means,nbCl)
+		clusterSize(X_all_norm,k_means,nbCl)
 		print("K-Means done !")
 		X_all_norm=addColumnCluster(X_all_norm,k_means,nbCl)
 		return X_all_norm
 
 	if clt_name=='AgglomerativeClustering':
-		print("------- AgglomerativeClustering ---------")
+		print("AgglomerativeClustering Starting...")
 		X_all_norm = X_all_norm.sample(n=X_all_norm.shape[0]*rate,random_state=1)
 		clustering = AgglomerativeClustering(n_clusters=nbCl, linkage='complete').fit(X_all_norm)
-		clusterSize(clustering,nbCl)
+		clusterSize(X_all_norm,clustering,nbCl)
 		print("AgglomerativeClustering done !")
 		X_all_norm=addColumnCluster(X_all_norm,clustering,nbCl)
 		return X_all_norm
 
 	if clt_name=='Birch':
-		print("------- Birch ---------")
-		X_all_norm = X_all_norm.sample(n=X_all_norm.shape[0]*rate,random_state=1)
+		print("Birch Starting...")
+		X_all_norm = X_all_norm.sample(n=int(X_all_norm.shape[0]*rate),random_state=1)
 		brc = Birch(branching_factor=50, n_clusters=nbCl, threshold=0.5, compute_labels=True)
 		brc.fit(X_all_norm)
-		clusterSize(brc,nbCl)
+		clusterSize(X_all_norm,brc,nbCl)
 		print("Birch done !")
 		X_all_norm=addColumnCluster(X_all_norm,brc,nbCl)
 		return X_all_norm
@@ -152,8 +155,8 @@ if __name__ == "__main__":
 	prep  = Preprocessing(data)
 	X_all_norm = prep.preprocess_attributs()
 	print("Preprocessing done !")
-	X_all_norm=type_cluster(X_all_norm,'KMeans',0.3)
-	generate_files(X_all_norm,prep)
+	X_all_norm=type_cluster(X_all_norm,'KMeans',nbCl,0.3)
+	generate_files(X_all_norm,prep,'KMeans')
 
 	# nbCl=int(sys.argv[1])
 	# # read input text and put data inside a data frame
