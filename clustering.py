@@ -31,9 +31,9 @@ if __name__ == "__main__":
 	# clustering = DBSCAN(eps=3, min_samples=2, n_jobs=-1).fit(X_all_norm)
 	# print(clustering.labels_)
 
-	print("------- AgglomerativeClustering ---------")
-	clustering = AgglomerativeClustering(n_clusters=nbCl, linkage='complete').fit(X_all_norm)
-	clusterSize(clustering,nbCl)
+	# print("------- AgglomerativeClustering ---------")
+	# clustering = AgglomerativeClustering(n_clusters=nbCl, linkage='complete').fit(X_all_norm)
+	# clusterSize(clustering,nbCl)
 
 	print("------- Birch ---------")
 	brc = Birch(branching_factor=50, n_clusters=nbCl, threshold=0.5, compute_labels=True)
