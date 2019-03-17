@@ -140,6 +140,7 @@ def type_cluster(X_all_norm,clt_name,nbCl,rate):
 		return X_all_norm
 
 if __name__ == "__main__":
+	pass
 	# if len(sys.argv) > 1:
 	# 	nbCl=int(sys.argv[1])
 	# else:

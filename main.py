@@ -14,6 +14,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import cross_val_predict
 from sklearn.model_selection import train_test_split
+from sklearn import metrics
 
 warnings.filterwarnings(action='ignore', category=DataConversionWarning)
 pd.options.mode.chained_assignment = None
@@ -60,20 +61,15 @@ if __name__ == "__main__":
 
 	lst_classif = [dummycl, gmb, dectree, logreg]
 	lst_classif_names = ['Dummy', 'Naive Bayes', 'Decision tree', 'Logistic regression']
-	accuracy_score(lst_classif,lst_classif_names,X_all_norm,prep.y_rdv)
 
 	print("----------- calculating performance DONE -----------")	
 
 	print("----------- prediction -----------")	
-	X_train, X_test, y_train, y_test = train_test_split( X_all_norm, prep.y_rdv, test_size = 0.3, random_state = 100)
-	dectree.fit(X_train, y_train)
-	y_pred = dectree.predict(X_test)
-	print( 'Accuracy of Decision tree classifier on test set : {:.2f}'.format(dectree.score(X_test, y_test)))
-
-	X_train, X_test, y_train, y_test = train_test_split( X_KMeans.drop(columns='cluster'), X_KMeans['cluster'], test_size = 0.3, random_state = 100)
-	dectree.fit(X_train, y_train)
-	y_pred = dectree.predict(X_test)
-	print( 'Accuracy of Cluster on test set : {:.2f}'.format(dectree.score(X_test, y_test)))
+	lst_dectree = [dectree]
+	lst_dectree_names = ['Decision tree']
+		
+	confusion_matrix(lst_dectree,lst_dectree_names,X_all_norm,prep.y_rdv)
+	confusion_matrix(lst_dectree,lst_dectree_names,X_KMeans.drop(columns='cluster'),X_KMeans['cluster'])
 
 	print("----------- prediction DONE -----------")	
 
