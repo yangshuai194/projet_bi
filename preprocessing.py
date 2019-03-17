@@ -61,7 +61,6 @@ class Preprocessing:
 		self.data.loc[self.data['rdv'] == "0" ,'rdv'] = "non"
 
 		self.data["dept"] = self.data["dept"].astype(str)
-
 		self.y_rdv=self.data['rdv']
 		self.y_dept=self.data['dept']
 		self.y_code_cr=self.data['code_cr']
