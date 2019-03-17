@@ -64,9 +64,6 @@ def clusterSize(clusterFunction, nbClusters):
 		print(data_cluster.shape[0])
 
 
-def cluster_cah():
-	pass
-
 
 if __name__ == "__main__":
 	# nbCl=int(sys.argv[1])
@@ -74,23 +71,23 @@ if __name__ == "__main__":
 	data = pd.read_csv('base_prospect.csv',sep=',')
 
 	prep  = Preprocessing(data)
-	X_all_norm = prep.preprocess_attributs_clustering(0.3)
+	X_all_norm = prep.preprocess_attributs()
 
 	print("------- K-Means ---------")
-	# for x in range(0,4):
-	# 	lst_k=range(1,15)
-	# 	Sum_of_squared_distances = []
-	# 	for k in lst_k:
-	# 		est=KMeans(n_clusters=k)
-	# 		est.fit(X_all_norm)
-	# 		Sum_of_squared_distances.append(r_square(np.array(X_all_norm), est.cluster_centers_,est.labels_,k))
+	for x in range(0,4):
+		lst_k=range(1,15)
+		Sum_of_squared_distances = []
+		for k in lst_k:
+			est=KMeans(n_clusters=k)
+			est.fit(X_all_norm)
+			Sum_of_squared_distances.append(r_square(np.array(X_all_norm), est.cluster_centers_,est.labels_,k))
 
-	# 	plt.plot(lst_k, Sum_of_squared_distances, 'bx-')
-	# 	plt.xlabel('k')
-	# 	plt.ylabel('Sum_of_squared_distances')
-	# 	plt.title('Elbow Method For Optimal k')
-	# 	plt.savefig ('./img/k-means_elbow_%s'%x)
-	# 	plt.clf()
+		plt.plot(lst_k, Sum_of_squared_distances, 'bx-')
+		plt.xlabel('k')
+		plt.ylabel('Sum_of_squared_distances')
+		plt.title('Elbow Method For Optimal k')
+		plt.savefig ('./img/k-means_elbow')
+		plt.clf()
 
 
 	# from sklearn.mixture import GaussianMixture

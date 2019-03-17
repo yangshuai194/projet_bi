@@ -31,7 +31,6 @@ def addColumnCluster(data,clf,nbCl):
 	cluster_map['cluster'] = clf.labels_
 	print("add cluster value...")
 	data['cluster'] = pd.Series(cluster_map['cluster'], index=data.index)
-	print(data['cluster'])
 	print("Done !")
 	return data
 
@@ -68,7 +67,6 @@ def generate_files(X_all_norm,prep,clt_name):
 
 		dept_non = cluster_dept[cluster_dept['rdv']=='non']
 		count_dept_2 = dept_non.groupby(['dept','rdv']).size().to_frame(name_non).reset_index().drop(columns='rdv')
-		print(count_dept_2)
 		count_dept_2[name_non] = count_dept_2[name_non].astype('int')
 		# count_dept_2.to_csv(name_non+'.csv', sep=',',index=False)
 
@@ -142,21 +140,21 @@ def type_cluster(X_all_norm,clt_name,nbCl,rate):
 		return X_all_norm
 
 if __name__ == "__main__":
-	if len(sys.argv) > 1:
-		nbCl=int(sys.argv[1])
-	else:
-		nbCl = 8
+	# if len(sys.argv) > 1:
+	# 	nbCl=int(sys.argv[1])
+	# else:
+	# 	nbCl = 8
 
-	print str(nbCl) + " clusters."
-	print("Load data...")
-	data = pd.read_csv('base_prospect.csv',sep=',')
-	print("Data loaded !")
-	print("Preprocessing data...")
-	prep  = Preprocessing(data)
-	X_all_norm = prep.preprocess_attributs()
-	print("Preprocessing done !")
-	X_all_norm=type_cluster(X_all_norm,'KMeans',nbCl,0.3)
-	generate_files(X_all_norm,prep,'KMeans')
+	# print str(nbCl) + " clusters."
+	# print("Load data...")
+	# data = pd.read_csv('base_prospect.csv',sep=',')
+	# print("Data loaded !")
+	# print("Preprocessing data...")
+	# prep  = Preprocessing(data)
+	# X_all_norm = prep.preprocess_attributs()
+	# print("Preprocessing done !")
+	# X_all_norm=type_cluster(X_all_norm,'KMeans',nbCl,0.3)
+	# generate_files(X_all_norm,prep,'KMeans')
 
 	# nbCl=int(sys.argv[1])
 	# # read input text and put data inside a data frame
